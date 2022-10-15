@@ -19,6 +19,8 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
+// anasayfa
 app.get("/",async (req,res)=> {
     const posts = await Post.find({});
     res.render("index",{
@@ -26,8 +28,13 @@ app.get("/",async (req,res)=> {
     });
 });
 
-app.get("/post",(req,res)=> {
-    res.render("post");
+// sayfalar
+app.get("/post/:id", async (req,res)=> {
+   const post = await Post.findById(req.params.id)
+    console.log(req.params.id);
+    res.render("post",{
+        post
+    });
 })
 
 app.get("/about",(req,res)=> {
@@ -43,6 +50,8 @@ app.post("/postAdd",async (req,res)=> {
     await Post.create(req.body)
     res.redirect("/");
 })
+,
+
 
 app.listen(3000,()=> {
     console.log("sunucu başladı");
