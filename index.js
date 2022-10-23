@@ -1,58 +1,44 @@
 const express = require("express");
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const path = require("path");
+const methodOverride = require("method-override");
 const ejs = require("ejs");
 const Post = require("./modals/Post");
+const pageContralers = require("./controllars/pageControlars");
+
+const postContralers = require("./controllars/postControllars");
 
 const app = express();
 
 //connect DB
-mongoose.connect('mongodb://localhost/cleanblog-test-db');
+mongoose.connect("mongodb://localhost/cleanblog-test-db");
 
 // templete engine
-app.set("view engine","ejs");
+app.set("view engine", "ejs");
 // views ile temp ismi değişir
 
-
 //middleware
-app.use(express.static('public'));
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(
+  methodOverride("_method", {
+    methods: ["POST", "GET"],
+  })
+);
+
+// routers
+app.get("/", pageContralers.indexPage);
+app.get("/about", pageContralers.aboutPage);
+app.get("/add_post", pageContralers.addPostPage);
 
 
-// anasayfa
-app.get("/",async (req,res)=> {
-    const posts = await Post.find({});
-    res.render("index",{
-        posts
-    });
+app.get("/post/:id", postContralers.getPostAll);
+app.get("/post/edit/:id", pageContralers.editPage);
+app.post("/postAdd", postContralers.addPost);
+app.put("/post/:id", postContralers.updatePost);
+app.delete("/post/:id", postContralers.deletePost);
+
+app.listen(3000, () => {
+  console.log("sunucu başladı");
 });
-
-// sayfalar
-app.get("/post/:id", async (req,res)=> {
-   const post = await Post.findById(req.params.id)
-    console.log(req.params.id);
-    res.render("post",{
-        post
-    });
-})
-
-app.get("/about",(req,res)=> {
-    res.render("about");
-})
-
-app.get("/add_post",(req,res)=> {
-    res.render("add_post");
-})
-
-
-app.post("/postAdd",async (req,res)=> {
-    await Post.create(req.body)
-    res.redirect("/");
-})
-,
-
-
-app.listen(3000,()=> {
-    console.log("sunucu başladı");
-})
